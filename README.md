@@ -50,7 +50,7 @@ cd init
 И всё - система готова к работе!
 
 ## Тестирование
- * http://localhost:8080/book/all - покидать запросы на шлюз через Postman, 
+ * [http://localhost:8080/api/orders](http://localhost:8080/api/orders) - покидать запросы на шлюз через Postman, 
 бразуер или как [тут](testing/gateway.http), через особый файл;
  * http://localhost:8081/ - посмотреть работу MongoDB (логин: admin, пароль: pass);
  * http://localhost:15672/#/ - посмотреть работу RabbitMQ (логин: guest, пароль: guest);
