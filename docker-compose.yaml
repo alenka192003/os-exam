@@ -1,0 +1,123 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+
+  redis:
+    image: "redis:6.2-alpine"
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+
+  domain:
+    image: alena1709/domain:latest
+    pull_policy: always
+    container_name: domain
+    ports:
+      - "8082:8082"
+      - "50051:50051"
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - GRPC_SERVER_PORT=50051
+    depends_on:
+      - mongo
+      - rabbitmq
+      - redis
+    restart: always
+
+  gateway:
+    image: alena1709/gateway:latest
+    pull_policy: always
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logstash/logs/application.log:/app/logs/application.log
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GRPC_SERVER_HOST=domain
+      - GRPC_SERVER_PORT=50051
+    depends_on:
+      - domain
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - gateway
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.1
+    container_name: logstash
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logs/application.log:/app/logs/application.log
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5044:5044"
+      - "5000:5000"
+      - "9600:9600"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.1
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch

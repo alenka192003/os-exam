@@ -1,0 +1,25 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${MONGODB_HOST}:${MONGODB_PORT}/order-db
+  #      uri: mongodb://localhost:27017/book-db
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    password: guest
+    username: guest
+    virtual-host: /
+
+
+grpc:
+  server:
+    port: ${GRPC_SERVER_PORT}
+
+rabbitmq:
+  queues:
+    order-created: orderCreated
+    order-updated: orderUpdated
+    order-deleted: orderDeleted
+
+server:
+  port: 8082

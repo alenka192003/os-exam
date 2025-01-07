@@ -1,0 +1,10 @@
+### Get all
+GET http://localhost:8080/api/orders
+Accept: application/json
+
+### Get by id
+GET http://localhost:8080/api/orders/...
+Accept: application/json
+
+### Delete book by id
+DELETE http://localhost:8080/api/orders/...
