@@ -5,6 +5,11 @@ package order;
 service OrderService {
   rpc GetAllOrders (Empty) returns (OrderList);
   rpc GetOrderById (OrderRequest) returns (Order);
+  rpc CreateOrder (Order) returns (Order);
+
+  rpc UpdateOrder (Order) returns (Order);
+
+  rpc DeleteOrder (OrderRequest) returns (Order);
 }
 
 message OrderRequest {
